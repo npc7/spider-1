@@ -1,0 +1,5 @@
+# coding=utf8
+# Format:   msyql:xx.xx.xx.xx crawler_db user pswd
+mysql:localhost crawler root admin
+# Sleep time:1 (seconds)
+sleep:3
