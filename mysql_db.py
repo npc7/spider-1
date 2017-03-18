@@ -13,12 +13,11 @@ def msg_print(msg):
 
 
 class MysqlDB:
-    conn = None
-    cursor = None
 
     def __init__(self, ip, db, user, pswd):
         self.conn = pymysql.connect(host=ip, user=user, passwd=pswd, db=db, charset='utf8')
         self.cursor = self.conn.cursor()
+        # for multi_thread
         self.lock = threading.Lock()
 
     def write_record(self, sql):
