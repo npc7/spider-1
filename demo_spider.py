@@ -11,7 +11,6 @@ htu = HtmlUtility()
 out_cat_file = "data/mybb_cat.csv"
 
 
-
 def parse_task(url):
     wf = open(out_cat_file, "w")
     sou_page = htu.get(url)
@@ -22,11 +21,9 @@ def parse_task(url):
         for sub_cat in cns[idx].xpath(".//p/a"):
             sub_cat_name = extract_data(sub_cat.xpath("./text()"))
             sub_cat_url = extract_data(sub_cat.xpath("./@href"))
-            print cat_name, sub_cat_name, sub_cat_url
+            print(" , ".join([cat_name, sub_cat_name, sub_cat_url]))
             wf.write(",".join([cat_name, sub_cat_name, sub_cat_url]) + "\n")
     wf.close()
-
-
 
 
 if __name__ == "__main__":

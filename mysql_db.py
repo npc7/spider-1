@@ -7,17 +7,17 @@ import pymysql
 import time
 import threading
 
-
 def msg_print(msg):
-    print time.strftime("%Y-%m-%d %H:%M:%S"), msg
+    print(time.strftime("%Y-%m-%d %H:%M:%S ") + msg)
 
 
 class MysqlDB:
+    conn = None
+    cursor = None
 
     def __init__(self, ip, db, user, pswd):
         self.conn = pymysql.connect(host=ip, user=user, passwd=pswd, db=db, charset='utf8')
         self.cursor = self.conn.cursor()
-        # for multi_thread
         self.lock = threading.Lock()
 
     def write_record(self, sql):
@@ -33,9 +33,9 @@ class MysqlDB:
             res = self.cursor.execute(sql)
             self.conn.commit()
             return res
-        except Exception, ex:
-            print sql
-            msg_print(ex)
+        except Exception as ex:
+            print(sql)
+            print(ex)
             return 0
         finally:
             self.lock.release()
@@ -54,14 +54,22 @@ class MysqlDB:
             res = self.cursor.fetchall()
             self.conn.commit()
             return res
-        except Exception, ex:
-            print sql
-            print ex
+        except Exception as ex:
+            print(sql)
+            print(ex)
             return None
         finally:
             self.lock.release()
 
-    def insert_dict(self, data_dict, table, mode="his"):
+    def safe_string(self, string):
+        """
+        remove special char from string to avoid sql syntax error
+        :param string: string
+        :return: 
+        """
+        return string.replace("'", "\\'").replace("\\", "\\\\")
+
+    def insert_dict(self, table, data_dict, mode="his"):
         """
         insert data with column names and different mode
         :param data_dict: data dict,
@@ -79,7 +87,8 @@ class MysqlDB:
         columns, values = [], []
         flag = mode == "his" and "update" in data_dict
         supdate = flag and ",".join(["%s='%s'" % (k, data_dict[k]) for k in data_dict.pop("update")]) or ""
-        for k, v in data_dict.iteritems():
+        for k in data_dict:
+            v = self.safe_string(data_dict[k])
             columns.append(k)
             values.append("'%s'" % v)
         sfield = ",".join(columns)
@@ -117,7 +126,7 @@ class MysqlDB:
         # data_dict.pop() 避免 where 条件 column 出现在 set 语句后面
         wherestr = ",".join(["%s='%s'" % (wh, data_dict.pop(wh)) for wh in data_dict.pop("where")])
         for key in data_dict:
-            setstr += "%s='%s'," % (key, data_dict[key])
+            setstr += "%s='%s'," % (key, self.safe_string(data_dict[key]))
         strsql = "update %s set %s where %s" % (table, setstr, wherestr)
         ires = self.write_record(strsql)
         msg_print(ires > 0 and "update info success !" or "update failed !")
