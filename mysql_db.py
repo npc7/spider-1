@@ -35,7 +35,7 @@ class MysqlDB:
             return res
         except Exception as ex:
             print(sql)
-            print(ex)
+            print(ex.message)
             return 0
         finally:
             self.lock.release()
@@ -56,7 +56,7 @@ class MysqlDB:
             return res
         except Exception as ex:
             print(sql)
-            print(ex)
+            print(ex.message)
             return None
         finally:
             self.lock.release()
@@ -67,7 +67,7 @@ class MysqlDB:
         :param string: string
         :return: 
         """
-        return string.replace("'", "\\'").replace("\\", "\\\\")
+        return string.replace("\\", "\\\\").replace("'", "\\'")
 
     def insert_dict(self, table, data_dict, mode="his"):
         """
@@ -104,7 +104,7 @@ class MysqlDB:
         if mode == "syn":
             strsql = "REPLACE INTO %s (%s) values (%s)" % (table, sfield, svalue)
         ires = self.write_record(strsql)
-        msg_print(ires > 0 and "insert success !" or ("insert failed ! ", data_dict))
+        msg_print(ires > 0 and "insert success !" or "insert failed !")
         return ires
 
     def update_dict(self, data_dict, table):
